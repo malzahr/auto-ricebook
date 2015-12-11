@@ -1,0 +1,101 @@
+test:
+  servers:
+    - 10.10.192.213
+  auth:
+    user: root
+    password: ricebook!^*cobbler
+  methods:
+    set_hostname:
+      hostname: zzz
+      incr: True
+    set_gateway_and_dns:
+      interface: eth0
+      gateway: 10.10.196.88
+      dns:
+        - 10.10.99.43
+      domain: ricebook.net
+    set_hosts:
+      10.10.57.167: mfsmaster
+    rm_hosts:
+      - hub.nova.ricebook.net
+    add_repo:
+      - MooseFS.repo
+      - docker.repo
+      - ricebook.repo
+    rm_repo:
+      - a.repo
+    update_system:
+      quite: False
+    add_user:
+      cmgs:
+        uid: 3001
+        sudo: True
+        login: True
+        pkey: cmgs.pub
+    security_root:
+      random_password: False
+      security_login:
+        - 10.10.*.*
+      root_key: True
+    optimize:
+      ulimit: True
+      sysctl: True
+    services:
+      install:
+        moosefs-client:
+          enable: True
+          config:
+            mount: /tmp/mfs1
+            mfsmaster: 10.10.57.167
+            port: 9421
+        falcon-agent:
+          enable: True
+          config:
+            heartbeat:
+              addr: 10.10.181.150:6030
+            transfer:
+              addr: 10.10.194.26:8433
+        docker:
+          enable: True
+          config:
+            pod: dns
+            eru: eru.nova.ricebook.net
+        eru-agent:
+          enable: True
+          config:
+            api:
+              addr: 0.0.0.0:12345
+            redis:
+              host: 10.10.11.59
+              port: 6379
+            transfers:
+              - 10.10.194.26:8433
+            lenz:
+              stdout: False
+              count: 20
+              forwards:
+                - tcp://log.nova.ricebook.net:50433
+            docker:
+              health: 30
+            eru:
+              endpoint: http://eru.nova.ricebook.net
+      modify:
+        moosefs-client:
+          update: True
+          config:
+            mount: /mnt/mfs
+            mfsmaster: mfsmaster
+            port: 9421
+        falcon-agent:
+          update: True
+          config:
+            debug: false
+        eru-agent:
+          config:
+            lenz:
+              count: 100
+      restart:
+        - moosefs-client
+        - falcon-agent
+        - docker
+        - eru-agent
